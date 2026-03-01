@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>חשבון נפש אישי יומי</title>
+  <style>
+    :root {
+      --primary: #4a7c6f;
+      --primary-dark: #35635a;
+      --accent: #e8f4f1;
+      --bg: #f5f7f6;
+      --card: #ffffff;
+      --text: #2c3e35;
+      --text-light: #6b8c82;
+      --border: #c8ddd8;
+      --shadow: 0 2px 12px rgba(74, 124, 111, 0.12);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 28px 24px 20px;
+      text-align: center;
+      box-shadow: 0 4px 18px rgba(74,124,111,0.25);
+    }
+    header h1 { font-size: 1.8rem; letter-spacing: 0.5px; margin-bottom: 4px; }
+    header p  { font-size: 0.95rem; opacity: 0.85; }
+
+    /* ── Date nav ── */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 24px;
+    }
+    .date-nav button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .date-nav button:hover { background: rgba(255,255,255,0.35); }
+    .date-nav button:disabled { opacity: 0.4; cursor: default; }
+    #current-date {
+      font-size: 1.05rem;
+      font-weight: 600;
+      min-width: 180px;
+      text-align: center;
+    }
+    #today-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #today-btn:hover { background: rgba(255,255,255,0.3); }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      background: #fff;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #6bbfaf);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-label {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      white-space: nowrap;
+    }
+
+    /* ── Intro note ── */
+    .intro {
+      max-width: 820px;
+      margin: 24px auto 0;
+      padding: 0 20px;
+    }
+    .intro-card {
+      background: var(--accent);
+      border-right: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      font-size: 0.88rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* ── Questions ── */
+    .questions {
+      max-width: 820px;
+      margin: 24px auto 0;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .q-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      transition: box-shadow 0.2s, border-right 0.2s;
+      border-right: 4px solid transparent;
+    }
+    .q-card.answered { border-right: 4px solid var(--primary); }
+    .q-card:focus-within { box-shadow: 0 4px 20px rgba(74,124,111,0.2); }
+
+    .q-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .q-number {
+      background: var(--accent);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 0.8rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .q-card.answered .q-number {
+      background: var(--primary);
+      color: #fff;
+    }
+    .q-text {
+      font-size: 0.97rem;
+      line-height: 1.65;
+      padding-top: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.93rem;
+      color: var(--text);
+      resize: vertical;
+      direction: rtl;
+      background: var(--bg);
+      transition: border-color 0.2s, background 0.2s;
+      line-height: 1.6;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+    }
+    textarea.readonly {
+      background: #f9fbfa;
+      color: var(--text-light);
+      cursor: default;
+    }
+
+    /* ── Actions ── */
+    .actions {
+      max-width: 820px;
+      margin: 24px auto 0;
+      padding: 0 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(74,124,111,0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 18px rgba(74,124,111,0.4); }
+    .btn-secondary {
+      background: var(--accent);
+      color: var(--primary-dark);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #d4ede8; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--primary-dark);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 24px;
+      font-size: 0.92rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      transition: transform 0.35s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── History modal ── */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-overlay.open { display: flex; }
+    #modal {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 28px;
+      max-width: 480px;
+      width: 92%;
+      max-height: 80vh;
+      overflow-y: auto;
+      direction: rtl;
+    }
+    #modal h2 { margin-bottom: 16px; font-size: 1.1rem; color: var(--primary-dark); }
+    .history-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .history-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .history-list li .hist-date { font-weight: 600; color: var(--primary-dark); }
+    .history-list li .hist-count { color: var(--text-light); font-size: 0.82rem; }
+    .history-list li button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .modal-close {
+      margin-top: 18px;
+      width: 100%;
+      background: var(--accent);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.4rem; }
+      .questions, .intro, .actions { padding: 0 12px; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>חשבון נפש אישי</h1>
+  <p>הרהור יומי לצמיחה אישית ורוחנית</p>
+</header>
+
+<div class="date-nav">
+  <button id="prev-day" title="יום קודם">›</button>
+  <span id="current-date"></span>
+  <button id="next-day" title="יום הבא">‹</button>
+  <button id="today-btn">היום</button>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <span class="progress-label" id="progress-label">0 / 36</span>
+</div>
+
+<div class="intro">
+  <div class="intro-card">
+    השאלות הבאות מכוונות לתחומים כלליים עליהם אנחנו רוצים להביט בחשבון הנפש האישי שלנו.
+    התייעץ/י תמיד עם החונך שלך לגבי כל עבודת צעדים שאתה/את עושה.
+  </div>
+</div>
+
+<div class="questions" id="questions-container"></div>
+
+<div class="actions">
+  <button class="btn btn-primary" id="save-btn">שמור תשובות</button>
+  <button class="btn btn-secondary" id="history-btn">היסטוריה</button>
+  <button class="btn btn-secondary" id="clear-btn">נקה יום זה</button>
+</div>
+
+<div id="toast"></div>
+
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>היסטוריית ימים</h2>
+    <ul class="history-list" id="history-list"></ul>
+    <button class="modal-close" id="modal-close">סגור</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  "האם אישרתי מחדש את האמונה שלי באלוהים אכפתי ואוהב היום?",
+  "האם בקשתי היום את ההדרכה של הכוח העליון שלי? באיזה אופן?",
+  "מה עשיתי לתועלת אלוהים והאנשים סביבי?",
+  "האם אלוהים העניק לי משהו עליו אני יכול להיות אסיר תודה היום?",
+  "האם אני מאמין שהכוח העליון שלי יכול להראות לי איך לחיות טוב יותר בהתאמה עם הרצון של הכוח הזה?",
+  "האם אני רואה \"דפוסים ישנים\" כלשהם בחיי היום? אם כן, אילו?",
+  "האם אני מלא טינה, אנוכי, חסר כנות או מפוחד?",
+  "האם כוונתי את עצמי לאכזבה?",
+  "האם הייתי נחמד ואוהב כלפי הכל?",
+  "האם הייתי מודאג ביחס לאתמול או מחר?",
+  "האם הרשתי לעצמי להיות אובססיבי לגבי משהו?",
+  "האם הרשתי לעצמי להיות יותר מדי רעב, כועס, בודד או עייף?",
+  "האם אני לוקח את עצמי יותר מדי ברצינות בתחום כלשהו בחיי?",
+  "האם אני סובל מבעיות גופניות, נפשיות או רוחניות כלשהן?",
+  "האם אני שומר לעצמי משהו שהייתי צריך לדבר עליו עם החונך שלי?",
+  "האם היו לי אילו שהם רגשות קיצוניים היום? מה הם היו ולמה הרגשתי אותם?",
+  "מהם השטחים הבעיתיים בחיי היום?",
+  "אילו פגמים לקחו חלק בחיי היום? באיזה אופן?",
+  "האם היה פחד בחיי היום?",
+  "מה עשיתי היום שהייתי מקווה שלא עשיתי אותו?",
+  "מה לא עשיתי היום שהייתי מקווה שהייתי עושה?",
+  "האם אני נכון להשתנות היום?",
+  "האם היה קונפליקט במערכות היחסים שלי היום? מהו?",
+  "האם אני מקיים מעורבות אישית במערכות היחסים שלי עם אחרים?",
+  "האם פגעתי בעצמי או באחרים, באופן ישיר או עקיף היום? באיזה אופן?",
+  "האם אני חייב התנצלות או כפרה למישהו?",
+  "היכן טעיתי ואם הייתה לי אפשרות לעשות את זה שוב, מה הייתי עושה אחרת? מה הייתי משפר/ת לפעם הבאה?",
+  "האם נשארתי נקי היום?",
+  "האם הייתי טוב אל עצמי היום?",
+  "אילו רגשות הרגשתי היום? איך השתמשתי בהם כדי להתמקד בפעולות עיקריות מרכזיות?",
+  "מה עשיתי היום לתועלת של אחרים?",
+  "מה עשיתי היום שלגביו אני מרגיש/ה חיובי?",
+  "מה גרם לי לסיפוק היום?",
+  "מה עשיתי היום שאני רוצה להיות בטוח שאחזור עליו?",
+  "האם הלכתי לפגישה או דברתי עם מכור מחלים אחר היום?",
+  "על מה אני צריך/ה להיות אסיר/ת תודה היום?"
+];
+
+const STORAGE_KEY = 'daily_reflection_';
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
+// ── State ──
+let currentDate = todayKey();
+
+function dateLabel(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = Math.round((date - today) / 86400000);
+  const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  const label = date.toLocaleDateString('he-IL', opts);
+  if (diff === 0) return `היום — ${label}`;
+  if (diff === -1) return `אתמול — ${label}`;
+  return label;
+}
+
+function offsetDate(base, days) {
+  const [y, m, d] = base.split('-').map(Number);
+  const date = new Date(y, m - 1, d + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function loadAnswers(dateStr) {
+  const raw = localStorage.getItem(STORAGE_KEY + dateStr);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveAnswers(dateStr, answers) {
+  localStorage.setItem(STORAGE_KEY + dateStr, JSON.stringify(answers));
+}
+
+function countAnswered(answers) {
+  return Object.values(answers).filter(v => v && v.trim()).length;
+}
+
+// ── Build questions ──
+function buildQuestions(dateStr) {
+  const isToday = dateStr === todayKey();
+  const answers = loadAnswers(dateStr);
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+
+  QUESTIONS.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card' + (answers[i] && answers[i].trim() ? ' answered' : '');
+    card.dataset.index = i;
+
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-number">${i + 1}</div>
+        <div class="q-text">${q}</div>
+      </div>
+      <textarea
+        id="q-${i}"
+        placeholder="הכנס/י את תשובתך כאן..."
+        ${!isToday ? 'readonly class="readonly"' : ''}
+      >${answers[i] || ''}</textarea>
+    `;
+
+    if (isToday) {
+      const ta = card.querySelector('textarea');
+      ta.addEventListener('input', () => {
+        const filled = ta.value.trim().length > 0;
+        card.classList.toggle('answered', filled);
+        updateProgress();
+      });
+    }
+
+    container.appendChild(card);
+  });
+
+  updateProgress();
+  document.getElementById('save-btn').style.display = isToday ? '' : 'none';
+  document.getElementById('clear-btn').style.display = isToday ? '' : 'none';
+}
+
+function updateProgress() {
+  const textareas = document.querySelectorAll('#questions-container textarea');
+  const answered = [...textareas].filter(t => t.value.trim()).length;
+  const pct = Math.round((answered / QUESTIONS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${answered} / ${QUESTIONS.length}`;
+}
+
+function collectAnswers() {
+  const answers = {};
+  QUESTIONS.forEach((_, i) => {
+    const ta = document.getElementById(`q-${i}`);
+    if (ta) answers[i] = ta.value;
+  });
+  return answers;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Nav ──
+function renderDate() {
+  document.getElementById('current-date').textContent = dateLabel(currentDate);
+  document.getElementById('next-day').disabled = currentDate >= todayKey();
+  buildQuestions(currentDate);
+}
+
+document.getElementById('prev-day').addEventListener('click', () => {
+  currentDate = offsetDate(currentDate, -1);
+  renderDate();
+});
+document.getElementById('next-day').addEventListener('click', () => {
+  if (currentDate < todayKey()) {
+    currentDate = offsetDate(currentDate, 1);
+    renderDate();
+  }
+});
+document.getElementById('today-btn').addEventListener('click', () => {
+  currentDate = todayKey();
+  renderDate();
+});
+
+// ── Save ──
+document.getElementById('save-btn').addEventListener('click', () => {
+  const answers = collectAnswers();
+  saveAnswers(currentDate, answers);
+  showToast('התשובות נשמרו בהצלחה ✓');
+});
+
+// ── Clear ──
+document.getElementById('clear-btn').addEventListener('click', () => {
+  if (!confirm('האם לנקות את כל התשובות של היום?')) return;
+  localStorage.removeItem(STORAGE_KEY + currentDate);
+  buildQuestions(currentDate);
+  showToast('היום נוקה');
+});
+
+// ── History ──
+document.getElementById('history-btn').addEventListener('click', () => {
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+
+  const keys = Object.keys(localStorage)
+    .filter(k => k.startsWith(STORAGE_KEY))
+    .map(k => k.replace(STORAGE_KEY, ''))
+    .sort((a, b) => b.localeCompare(a));
+
+  if (keys.length === 0) {
+    list.innerHTML = '<li style="justify-content:center;color:var(--text-light)">אין היסטוריה עדיין</li>';
+  } else {
+    keys.forEach(dateStr => {
+      const answers = loadAnswers(dateStr);
+      const cnt = countAnswered(answers);
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="hist-date">${dateLabel(dateStr)}</span>
+        <span class="hist-count">${cnt} / ${QUESTIONS.length} תשובות</span>
+        <button data-date="${dateStr}">צפה</button>
+      `;
+      li.querySelector('button').addEventListener('click', () => {
+        currentDate = dateStr;
+        renderDate();
+        closeModal();
+      });
+      list.appendChild(li);
+    });
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+});
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+
+// ── Auto-save on leave ──
+window.addEventListener('beforeunload', () => {
+  if (currentDate === todayKey()) {
+    saveAnswers(currentDate, collectAnswers());
+  }
+});
+
+// ── Init ──
+renderDate();
+</script>
+</body>
+</html>
